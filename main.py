@@ -1,14 +1,14 @@
 from pathlib import Path
-
+import os
 import qdarkstyle
-from PyQt6 import QtWidgets
-from PyQt6.QtCore import QDate
+from PyQt6 import QtWidgets, QtCore
+from PyQt6.QtCore import Qt, QDate
 from PyQt6.QtWidgets import QCheckBox, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox
 from PyQt6.QtWidgets import QProgressBar
 from loguru import logger
-
 from GUI.main_ui import Ui_MainWindow
 from read_files import read_excel
+import pandas as pd
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -146,6 +146,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             # Растягиваем столбцы по содержимому
             table_widget.resizeColumnsToContents()
 
+            # Разрешаем сортировку по столбцам
+            table_widget.setSortingEnabled(True)
+
+            # Подключаем обработчик щелчка по заголовкам столбцов для сортировки
+            table_widget.horizontalHeader().sectionClicked.connect(
+                lambda index: self.sort_table_column(table_widget, index))
+
             # Распределяем виджеты внутри страницы
             layout = QtWidgets.QVBoxLayout(page)
             layout.addWidget(table_widget)
@@ -158,6 +165,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 font-weight: bold;
             }
         """)
+
+    def sort_table_column(self, table_widget, index):
+        """Обработчик сортировки по столбцам"""
+        current_order = table_widget.horizontalHeader().sortIndicatorOrder()
+        if current_order == Qt.SortOrder.AscendingOrder:
+            table_widget.sortItems(index, Qt.SortOrder.DescendingOrder)
+        else:
+            table_widget.sortItems(index, Qt.SortOrder.AscendingOrder)
 
     def handle_checkbox_change(self, state):
         selected_dates = []
@@ -179,7 +194,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 if __name__ == '__main__':
     import sys
-    import os
 
     logger.add(
         f"logs.log",

@@ -40,7 +40,14 @@ class Ui_MainWindow(object):
         self.pushButton_2.setFont(font)
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout_3.addWidget(self.pushButton_2)
+
+        self.pushButton_3 = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.pushButton_3.setFont(font)
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.horizontalLayout_3.addWidget(self.pushButton_3)
+
         self.horizontalLayout_4.addLayout(self.horizontalLayout_3)
+
         self.gridLayout.addLayout(self.horizontalLayout_4, 0, 0, 1, 1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -83,6 +90,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButton.setText(_translate("MainWindow", "Выбрать файл"))
         self.pushButton_2.setText(_translate("MainWindow", "Поиск"))
+        self.pushButton_3.setText(_translate("MainWindow", "Сброс"))
         self.label_2.setText(_translate("MainWindow", "Дата доставки"))
         self.menu.setTitle(_translate("MainWindow", "Файл"))
         self.action.setText(_translate("MainWindow", "Настройки"))

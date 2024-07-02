@@ -6,7 +6,8 @@ def read_excel(filepath):
     df = pd.read_excel(filepath, skiprows=2)
     df = df.astype(str)
 
-    good_col = ['Номер заявки', 'Статус заказа', 'ФИО водителя', 'Дата маршрута', 'Номер заказа клиента']
+    good_col = ['Номер заявки', 'Статус заказа', 'ФИО водителя', 'Дата маршрута',
+                'Номер заказа клиента', 'Комментарий клиента']
     date_column = 'Дата маршрута'
     del_col = [col for col in df.columns if col not in good_col]
     df.drop(del_col, axis=1, inplace=True)

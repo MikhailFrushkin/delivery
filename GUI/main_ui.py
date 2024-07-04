@@ -1,4 +1,17 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtWidgets import QTabBar
+from PyQt6.QtCore import QRect, QSize
+
+
+class MultiRowTabBar(QTabBar):
+    def tabSizeHint(self, index):
+        size = super().tabSizeHint(index)
+        return QSize(size.width(), size.height() * 2)
+
+    def tabLayoutChange(self):
+        super().tabLayoutChange()
+        self.setFixedHeight(self.tabSizeHint(0).height() * ((self.count() + 1) // 2))
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -14,13 +27,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.lineEdit = QtWidgets.QLineEdit(parent=self.centralwidget)
         font = QtGui.QFont()
-        font.setPointSize(12)
+        font.setPointSize(13)
         self.lineEdit.setFont(font)
         self.lineEdit.setObjectName("lineEdit")
         self.horizontalLayout.addWidget(self.lineEdit)
         self.pushButton = QtWidgets.QPushButton(parent=self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
         self.pushButton.setFont(font)
         self.pushButton.setObjectName("pushButton")
         self.horizontalLayout.addWidget(self.pushButton)
@@ -28,14 +39,10 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.lineEdit_2 = QtWidgets.QLineEdit(parent=self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
         self.lineEdit_2.setFont(font)
         self.lineEdit_2.setObjectName("lineEdit_2")
         self.horizontalLayout_3.addWidget(self.lineEdit_2)
         self.pushButton_2 = QtWidgets.QPushButton(parent=self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
         self.pushButton_2.setFont(font)
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout_3.addWidget(self.pushButton_2)
@@ -50,22 +57,16 @@ class Ui_MainWindow(object):
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.label_2 = QtWidgets.QLabel(parent=self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
         self.verticalLayout_2.addWidget(self.label_2)
         self.horizontalLayout_2.addLayout(self.verticalLayout_2)
         self.gridLayout.addLayout(self.horizontalLayout_2, 1, 0, 1, 1)
 
-        # Wrap the QToolBox in a QScrollArea
-        self.scrollArea = QtWidgets.QScrollArea(parent=self.centralwidget)
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setObjectName("scrollArea")
-        self.toolBox = QtWidgets.QToolBox()
-        self.toolBox.setObjectName("toolBox")
-        self.scrollArea.setWidget(self.toolBox)
-        self.gridLayout.addWidget(self.scrollArea, 2, 0, 1, 1)
+        # Replace QToolBox with QTabWidget
+        self.tabWidget = QtWidgets.QTabWidget(parent=self.centralwidget)
+        self.tabWidget.setObjectName("tabWidget")
+        self.gridLayout.addWidget(self.tabWidget, 2, 0, 1, 1)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
@@ -83,7 +84,6 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.toolBox.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -95,4 +95,3 @@ class Ui_MainWindow(object):
         self.label_2.setText(_translate("MainWindow", "Дата доставки"))
         self.menu.setTitle(_translate("MainWindow", "Файл"))
         self.action.setText(_translate("MainWindow", "Настройки"))
-

@@ -3,12 +3,14 @@ import os
 import qdarkstyle
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import Qt, QDate
-from PyQt6.QtWidgets import QCheckBox, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox
-from PyQt6.QtWidgets import QProgressBar
+from PyQt6.QtWidgets import QCheckBox, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QProgressBar, \
+    QHeaderView
 from loguru import logger
 from GUI.main_ui import Ui_MainWindow
 from read_files import read_excel
 import pandas as pd
+
+from styles import tab_style, table_style
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -34,9 +36,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButton_2.clicked.connect(self.search)
         self.pushButton_3.clicked.connect(self.reset)
 
+        # Apply styles to QTabWidget tabs
+        self.setStyleSheet(tab_style)
+
     def reset(self):
         self.filtered_df = self.df.copy()
-        self.clear_toolbox()
+        self.clear_tabs()
         self.create_driver_tabs()
 
     def search(self):
@@ -49,7 +54,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.filtered_df = self.df[mask]
 
                 # Перерисовываем таблицы с ФИО водителей
-                self.clear_toolbox()
+                self.clear_tabs()
                 self.create_driver_tabs()
 
             except Exception as ex:
@@ -77,15 +82,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 # Очищаем verticalLayout_2 перед добавлением новых чекбоксов и вкладок
                 self.clear_layout(self.verticalLayout_2)
-                self.clear_toolbox()
+                self.clear_tabs()
 
                 # Создаем чекбоксы с датами и таблицы с ФИО водителей
                 self.create_date_checkboxes()
                 self.create_driver_tabs()
 
             except Exception as ex:
-                logger.error(f'ошибка чтения xlsx {ex}')
-                QMessageBox.information(self, 'Инфо', f'ошибка чтения xlsx {ex}')
+                logger.error(f'{ex}')
+                QMessageBox.information(self, 'Инфо', f'{ex}')
 
     def clear_layout(self, layout):
         """Очистка всех элементов в указанном layout"""
@@ -94,10 +99,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if widget is not None:
                 widget.deleteLater()
 
-    def clear_toolbox(self):
-        """Очистка всех вкладок в toolBox"""
-        for i in reversed(range(self.toolBox.count())):
-            self.toolBox.removeItem(i)
+    def clear_tabs(self):
+        """Очистка всех вкладок в tabWidget"""
+        while self.tabWidget.count():
+            self.tabWidget.removeTab(0)
 
     def create_date_checkboxes(self):
         """Создание чекбоксов для уникальных дат и добавление их в verticalLayout_2"""
@@ -111,14 +116,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             checkbox.stateChanged.connect(self.handle_checkbox_change)
 
     def create_driver_tabs(self):
-        """Создание вкладок для каждого уникального водителя в toolBox"""
-        unique_delivery = self.filtered_df["Номер маршрута"].unique() if self.filtered_df is not None else []
+        """Создание вкладок для каждого уникального водителя в tabWidget"""
+        unique_delivery = sorted(self.filtered_df["Номер маршрута"].unique() if self.filtered_df is not None else [])
 
         for delivery_num in unique_delivery:
             # Создаем новую страницу для водителя
             page = QtWidgets.QWidget()
             page.setObjectName(delivery_num)  # Имя вкладки как номер маршрута
-            self.toolBox.addItem(page, delivery_num)
+            self.tabWidget.addTab(page, delivery_num)
 
             # Создаем таблицу для отображения данных
             table_widget = QTableWidget(parent=page)
@@ -139,12 +144,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     item = QTableWidgetItem(str(value))
                     if self.df.columns[col_index] == "Дата маршрута":
                         item = QTableWidgetItem(str(value.strftime('%Y-%m-%d')))
-                    if len(str(value)) > 300:
+                    elif col_index == 6:  # Седьмой столбец (индекс 6)
+                        checkbox = QCheckBox()
+                        if value == "да":  # Предположим, что проверяемое значение хранится в строковом формате
+                            checkbox.setChecked(True)
+                        table_widget.setCellWidget(row_index, col_index, checkbox)
+                    elif len(str(value)) > 300:
                         item = QTableWidgetItem(f"{str(value[:100])}")
                     table_widget.setItem(row_index, col_index, item)
-
-            # Растягиваем столбцы по содержимому
-            table_widget.resizeColumnsToContents()
 
             # Разрешаем сортировку по столбцам
             table_widget.setSortingEnabled(True)
@@ -153,18 +160,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             table_widget.horizontalHeader().sectionClicked.connect(
                 lambda index: self.sort_table_column(table_widget, index))
 
+            # Растягиваем столбцы на весь доступный размер
+            header = table_widget.horizontalHeader()
+            header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)  # Размер по содержимому по умолчанию
+
+            # Установка соотношений размеров столбцов
+            header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)  # Растягиваем первый столбец
+            header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+            header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+            header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+            header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+            header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
+            header.setSectionResizeMode(6, QHeaderView.ResizeMode.Stretch)
+            # Пример задания минимальной ширины столбца
+            header.setMinimumSectionSize(50)  # Минимальная ширина первого столбца
+
             # Распределяем виджеты внутри страницы
+            table_widget.setStyleSheet(table_style)
             layout = QtWidgets.QVBoxLayout(page)
             layout.addWidget(table_widget)
-
-        # Применяем стили к QToolBox (установка шрифта, цвета и стиля текста для заголовков вкладок)
-        self.setStyleSheet("""
-            QToolBox::tab {
-                font-size: 16px;
-                color: yellow;
-                font-weight: bold;
-            }
-        """)
 
     def sort_table_column(self, table_widget, index):
         """Обработчик сортировки по столбцам"""
@@ -188,7 +202,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.filtered_df = self.df[self.df["Дата маршрута"].apply(lambda x: x.date() in selected_dates)]
 
         # Перерисовываем таблицы с ФИО водителей
-        self.clear_toolbox()
+        self.clear_tabs()
         self.create_driver_tabs()
 
 

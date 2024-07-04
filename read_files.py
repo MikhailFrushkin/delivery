@@ -5,9 +5,9 @@ import pandas as pd
 def read_excel(filepath):
     df = pd.read_excel(filepath, skiprows=2)
     df = df.astype(str)
-
-    good_col = ['Номер заявки', 'Статус заказа', 'ФИО водителя', 'Дата маршрута',
-                'Номер заказа клиента', 'Комментарий клиента']
+    insert_column = 'Проверено'
+    good_col = ['Номер заявки', 'Статус заказа', 'ФИО водителя', 'Дата маршрута', 'Номер маршрута',
+                'Номер заказа клиента', 'Проверено']
     date_column = 'Дата маршрута'
     del_col = [col for col in df.columns if col not in good_col]
     df.drop(del_col, axis=1, inplace=True)
@@ -18,6 +18,9 @@ def read_excel(filepath):
     # Применяем формат даты к столбцу 'Дата маршрута'
     if date_column in df.columns:
         df[date_column] = pd.to_datetime(df[date_column], errors='coerce')
+    if insert_column not in df.columns:
+        df.insert(6, 'Проверено', 'x')
+    print(df)
     return df
 
 

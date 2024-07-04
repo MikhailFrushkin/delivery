@@ -112,13 +112,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def create_driver_tabs(self):
         """Создание вкладок для каждого уникального водителя в toolBox"""
-        unique_drivers = self.filtered_df["ФИО водителя"].unique() if self.filtered_df is not None else []
+        unique_delivery = self.filtered_df["Номер маршрута"].unique() if self.filtered_df is not None else []
 
-        for driver in unique_drivers:
+        for delivery_num in unique_delivery:
             # Создаем новую страницу для водителя
             page = QtWidgets.QWidget()
-            page.setObjectName(driver)  # Имя вкладки как ФИО водителя
-            self.toolBox.addItem(page, driver)
+            page.setObjectName(delivery_num)  # Имя вкладки как номер маршрута
+            self.toolBox.addItem(page, delivery_num)
 
             # Создаем таблицу для отображения данных
             table_widget = QTableWidget(parent=page)
@@ -129,7 +129,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             table_widget.setHorizontalHeaderLabels(self.df.columns)
 
             # Определяем количество строк для данного водителя
-            driver_data = self.filtered_df[self.filtered_df["ФИО водителя"] == driver]
+            driver_data = self.filtered_df[self.filtered_df["Номер маршрута"] == delivery_num]
             num_rows = driver_data.shape[0]
             table_widget.setRowCount(num_rows)
 

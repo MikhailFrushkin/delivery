@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 import qdarkstyle
-from PyQt6 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import Qt, QDate
 from PyQt6.QtWidgets import QCheckBox, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QProgressBar, \
     QHeaderView
@@ -11,13 +11,20 @@ from read_files import read_excel
 import pandas as pd
 
 from styles import tab_style, table_style
+from utils import df_in_xlsx
+
+
+class LargeCheckBox(QCheckBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(50, 50)
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.version = 0.1
+        self.version = 2
         self.open_folder = ''
         self.name_doc = ''
         self.current_dir = Path.cwd()
@@ -35,6 +42,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButton.clicked.connect(self.evt_btn_open_file_clicked)
         self.pushButton_2.clicked.connect(self.search)
         self.pushButton_3.clicked.connect(self.reset)
+        self.pushButton_4.clicked.connect(self.created_excel)
 
         # Apply styles to QTabWidget tabs
         self.setStyleSheet(tab_style)
@@ -43,6 +51,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.filtered_df = self.df.copy()
         self.clear_tabs()
         self.create_driver_tabs()
+
+    def created_excel(self):
+        try:
+            filename = 'Проверенные заявки'
+            df_in_xlsx(self.df, filename)
+            # Открываем сохраненный файл в Excel
+            try:
+                os.startfile(f"{filename}.xlsx")
+            except OSError as e:
+                print(f"Не удалось открыть файл: {e}")
+        except Exception as ex:
+            logger.error(ex)
 
     def search(self):
         text = self.lineEdit_2.text().strip()
@@ -146,10 +166,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         item = QTableWidgetItem(str(value.strftime('%Y-%m-%d')))
                     elif col_index == 6:
                         checkbox = QCheckBox()
+                        checkbox.setStyleSheet("QCheckBox { width: 20px; height: 20px; }")
                         if value == "Да":
                             checkbox.setChecked(True)
-                        checkbox.stateChanged.connect(
-                            lambda state, row=row_data: self.handle_checked_checkbox(state, row))
+                        try:
+                            checkbox.stateChanged.connect(
+                                lambda state, row=row_data, page=page: self.handle_checked_checkbox(state, row, page))
+                        except Exception as ex:
+                            logger.error(ex)
                         table_widget.setCellWidget(row_index, col_index, checkbox)
                     elif len(str(value)) > 300:
                         item = QTableWidgetItem(f"{str(value[:100])}")
@@ -207,10 +231,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.clear_tabs()
         self.create_driver_tabs()
 
-    def handle_checked_checkbox(self, state, row_data):
+    def handle_checked_checkbox(self, state, row_data, page):
         try:
             columns_of_interest = ['Номер заявки', 'Статус заказа', 'ФИО водителя', 'Дата маршрута', 'Номер маршрута',
                                    'Номер заказа клиента']
+            num_delivery = row_data[self.df.columns.get_loc('Номер маршрута')]
 
             # Создаем список значений для каждого столбца
             values_of_interest = [row_data[self.df.columns.get_loc(col)] for col in columns_of_interest]
@@ -234,7 +259,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 else:
                     self.df.at[row_index, "Проверено"] = "Нет"
             else:
-                logger.warning("Row data not found in DataFrame.")
+                logger.warning("Строка не найдена")
+
+            filtered_df = self.df[self.df["Номер маршрута"] == num_delivery]
+            # Проверяем условие: все значения в столбце "Проверено" равны "Да"
+            all_checked = (filtered_df['Проверено'] == 'Да').all()
+
+            if all_checked:
+                index = self.tabWidget.indexOf(page)
 
         except Exception as ex:
             logger.error(f"Error handling checkbox change: {ex}")

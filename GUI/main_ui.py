@@ -42,14 +42,22 @@ class Ui_MainWindow(object):
         self.lineEdit_2.setFont(font)
         self.lineEdit_2.setObjectName("lineEdit_2")
         self.horizontalLayout_3.addWidget(self.lineEdit_2)
+
         self.pushButton_2 = QtWidgets.QPushButton(parent=self.centralwidget)
         self.pushButton_2.setFont(font)
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout_3.addWidget(self.pushButton_2)
+
         self.pushButton_3 = QtWidgets.QPushButton(parent=self.centralwidget)
         self.pushButton_3.setFont(font)
         self.pushButton_3.setObjectName("pushButton_3")
         self.horizontalLayout_3.addWidget(self.pushButton_3)
+
+        self.pushButton_4 = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.pushButton_4.setFont(font)
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.horizontalLayout_3.addWidget(self.pushButton_4)
+
         self.horizontalLayout_4.addLayout(self.horizontalLayout_3)
         self.gridLayout.addLayout(self.horizontalLayout_4, 0, 0, 1, 1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
@@ -92,6 +100,7 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "Выбрать файл"))
         self.pushButton_2.setText(_translate("MainWindow", "Поиск"))
         self.pushButton_3.setText(_translate("MainWindow", "Сброс"))
+        self.pushButton_4.setText(_translate("MainWindow", "Скачать файл"))
         self.label_2.setText(_translate("MainWindow", "Дата доставки"))
         self.menu.setTitle(_translate("MainWindow", "Файл"))
         self.action.setText(_translate("MainWindow", "Настройки"))

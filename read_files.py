@@ -3,8 +3,18 @@ import pandas as pd
 
 # Функция для загрузки данных и создания интерактивного приложения
 def read_excel(filepath):
-    df = pd.read_excel(filepath, skiprows=2)
-    df = df.astype(str)
+    try:
+        first_two_rows = pd.read_excel(filepath, nrows=1)
+        if first_two_rows.columns[0].startswith('Примен'):
+            df = pd.read_excel(filepath, skiprows=2)
+        else:
+            df = pd.read_excel(filepath)
+        df = df.astype(str)
+    except ValueError as e:
+        print(f"Ошибка: {e}")
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+
     insert_column = 'Проверено'
     good_col = ['Номер заявки', 'Статус заказа', 'ФИО водителя', 'Дата маршрута', 'Номер маршрута',
                 'Номер заказа клиента', 'Проверено']

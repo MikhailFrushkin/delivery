@@ -144,10 +144,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     item = QTableWidgetItem(str(value))
                     if self.df.columns[col_index] == "Дата маршрута":
                         item = QTableWidgetItem(str(value.strftime('%Y-%m-%d')))
-                    elif col_index == 6:  # Седьмой столбец (индекс 6)
+                    elif col_index == 6:
                         checkbox = QCheckBox()
-                        if value == "да":  # Предположим, что проверяемое значение хранится в строковом формате
+                        if value == "Да":
                             checkbox.setChecked(True)
+                        checkbox.stateChanged.connect(
+                            lambda state, row=row_data: self.handle_checked_checkbox(state, row))
                         table_widget.setCellWidget(row_index, col_index, checkbox)
                     elif len(str(value)) > 300:
                         item = QTableWidgetItem(f"{str(value[:100])}")
@@ -205,16 +207,41 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.clear_tabs()
         self.create_driver_tabs()
 
+    def handle_checked_checkbox(self, state, row_data):
+        try:
+            columns_of_interest = ['Номер заявки', 'Статус заказа', 'ФИО водителя', 'Дата маршрута', 'Номер маршрута',
+                                   'Номер заказа клиента']
+
+            # Создаем список значений для каждого столбца
+            values_of_interest = [row_data[self.df.columns.get_loc(col)] for col in columns_of_interest]
+
+            # Находим индекс строки, соответствующей значениям интересующих столбцов
+            mask = None
+            for column_name, value in zip(columns_of_interest, values_of_interest):
+                condition = (self.df[column_name] == value)
+                if mask is None:
+                    mask = condition
+                else:
+                    mask &= condition
+
+            # Применяем маску для фильтрации DataFrame
+            filtered_rows = self.df[mask]
+
+            if len(filtered_rows) > 0:
+                row_index = filtered_rows.index[0]  # Получаем индекс первой найденной строки
+                if state == 2:
+                    self.df.at[row_index, "Проверено"] = "Да"
+                else:
+                    self.df.at[row_index, "Проверено"] = "Нет"
+            else:
+                logger.warning("Row data not found in DataFrame.")
+
+        except Exception as ex:
+            logger.error(f"Error handling checkbox change: {ex}")
+
 
 if __name__ == '__main__':
     import sys
-
-    logger.add(
-        f"logs.log",
-        rotation="20 MB",
-        level="INFO",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {file!s} | {line} | {message}"
-    )
 
     app = QtWidgets.QApplication(sys.argv)
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())

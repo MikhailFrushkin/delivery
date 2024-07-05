@@ -20,7 +20,6 @@ def read_excel(filepath):
         df[date_column] = pd.to_datetime(df[date_column], errors='coerce')
     if insert_column not in df.columns:
         df.insert(6, 'Проверено', 'Нет')
-    print(df)
     return df
 
 

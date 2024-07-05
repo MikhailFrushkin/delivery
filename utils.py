@@ -1,10 +1,11 @@
 import pandas as pd
 from openpyxl import Workbook
+from openpyxl.styles import PatternFill
 from openpyxl.utils.dataframe import dataframe_to_rows
 
 
 def df_in_xlsx(df: pd.DataFrame, filename: str, max_width: int = 50):
-    """Запись датафрейма в файл Excel с фильтрами на колонках"""
+    """Запись датафрейма в файл Excel с условным форматированием"""
     workbook = Workbook()
     sheet = workbook.active
 
@@ -30,5 +31,14 @@ def df_in_xlsx(df: pd.DataFrame, filename: str, max_width: int = 50):
 
     # Добавляем фильтры на колонки
     sheet.auto_filter.ref = sheet.dimensions
+
+    # Условное форматирование: если значение в колонке "Проверено" равно "Нет", заливаем строку красным
+    red_fill = PatternFill(start_color='FFFF0000', end_color='FFFF0000', fill_type='solid')
+    for row in sheet.iter_rows(min_row=2, min_col=df.columns.get_loc("Проверено") + 1, max_col=df.columns.get_loc("Проверено") + 1):
+        for cell in row:
+            if cell.value == "Нет":
+                for cell_in_row in sheet[cell.row]:
+                    cell_in_row.fill = red_fill
+                break
 
     workbook.save(f"{filename}.xlsx")

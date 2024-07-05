@@ -100,7 +100,7 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "Выбрать файл"))
         self.pushButton_2.setText(_translate("MainWindow", "Поиск"))
         self.pushButton_3.setText(_translate("MainWindow", "Сброс"))
-        self.pushButton_4.setText(_translate("MainWindow", "Скачать файл"))
+        self.pushButton_4.setText(_translate("MainWindow", "Открыть файл"))
         self.label_2.setText(_translate("MainWindow", "Дата доставки"))
         self.menu.setTitle(_translate("MainWindow", "Файл"))
         self.action.setText(_translate("MainWindow", "Настройки"))
